@@ -25,6 +25,10 @@ COPY packages/client ./packages/client
 FROM source AS build-client
 RUN pnpm --filter @snap-grid/client build
 
+# ── Build shared (needed at runtime by server) ────────────────────────────────
+FROM source AS build-shared
+RUN pnpm --filter @snap-grid/shared build
+
 # ── Build server (tsc paths resolve shared/src directly, no .d.ts needed) ────
 FROM source AS build-server
 RUN pnpm --filter @snap-grid/server build
@@ -39,7 +43,9 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/server/package.json ./packages/server/
 RUN pnpm install --prod --filter @snap-grid/server...
 
-# Server compiled output (includes shared compiled alongside it)
+# Shared compiled output (required at runtime by server)
+COPY --from=build-shared /app/packages/shared/dist ./packages/shared/dist
+# Server compiled output
 COPY --from=build-server /app/packages/server/dist ./packages/server/dist
 # Client built SPA
 COPY --from=build-client /app/packages/client/dist ./packages/client/dist
