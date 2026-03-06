@@ -25,7 +25,9 @@ const io = new Server(httpServer, {
 // Client build is at packages/client/dist/
 const clientDist = process.env.CLIENT_DIST
   ? path.resolve(process.env.CLIENT_DIST)
-  : path.join(__dirname, '../../client/dist');
+  // __dirname in prod = .../packages/server/dist/server/src/
+  // Go up 5 levels to reach /app, then into packages/client/dist
+  : path.join(__dirname, '../../../../../packages/client/dist');
 
 app.use(express.static(clientDist, { maxAge: '1d' }));
 

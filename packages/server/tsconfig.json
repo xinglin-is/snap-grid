@@ -2,13 +2,17 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
+    "moduleResolution": "node",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "@snap-grid/shared": ["../shared/src/index.ts"]
+    },
+    "baseUrl": "."
   },
-  "include": ["src"]
+  "include": ["src", "../shared/src"]
 }
