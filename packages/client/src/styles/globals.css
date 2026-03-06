@@ -1,0 +1,178 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   SNAP-GRID DESIGN SYSTEM — CSS Custom Properties
+   UIUX-01 v1.0
+───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Board / Background */
+  --color-bg:              #0A0F1A;
+  --color-surface:         #121929;
+  --color-surface-raised:  #1A2336;
+
+  /* Grid cells */
+  --color-cell-own-empty:  #1E2A3A;
+  --color-cell-own-hover:  #243347;
+  --color-cell-opp-empty:  #0D1520;
+  --color-cell-occupied:   #1E2A3A;
+  --color-cell-border:     #2A3A52;
+  --color-cell-border-own: #2E4A6A;
+
+  /* Frontline */
+  --color-frontline:       #FF8C00;
+  --color-frontline-glow:  rgba(255, 140, 0, 0.4);
+
+  /* Player identity — Blue (Player 0) vs Purple (Player 1) */
+  --color-player0:         #3B82F6;
+  --color-player0-dim:     #1D3A6A;
+  --color-player1:         #8B5CF6;
+  --color-player1-dim:     #3D2169;
+
+  /* Card types */
+  --color-unit:            #3B82F6;
+  --color-spell:           #EC4899;
+  --color-structure:       #10B981;
+
+  /* Stats */
+  --color-power:           #EF4444;
+  --color-health:          #22C55E;
+  --color-health-low:      #EF4444;
+  --color-energy:          #F59E0B;
+
+  /* Combat */
+  --color-damage:          #EF4444;
+  --color-heal:            #22C55E;
+  --color-shield:          #60A5FA;
+
+  /* Nexus */
+  --color-nexus:           #FF8C00;
+  --color-nexus-hp:        #FCD34D;
+
+  /* UI Actions */
+  --color-ready:           #22C55E;
+  --color-ready-hover:     #16A34A;
+  --color-waiting:         #6B7280;
+  --color-disabled:        #374151;
+
+  /* Text */
+  --color-text-primary:    #F1F5F9;
+  --color-text-secondary:  #94A3B8;
+  --color-text-muted:      #4B5563;
+
+  /* Borders */
+  --color-border:          #1E2A3A;
+  --color-border-accent:   #2A3A52;
+
+  /* Fonts */
+  --font-display:          'Rajdhani', 'Arial Narrow', sans-serif;
+  --font-body:             'Inter', system-ui, sans-serif;
+
+  /* Animation durations (UIUX-01 spec) */
+  --anim-micro:            120ms;
+  --anim-card:             300ms;
+  --anim-screen:           300ms;
+  --anim-reveal:           500ms;
+  --anim-damage:           400ms;
+  --anim-death:            500ms;
+  --anim-banner:           300ms;
+  --anim-total:            3500ms;
+
+  /* Card dimensions */
+  --card-hand-w:           68px;
+  --card-hand-h:           96px;
+  --card-board-w:          calc((100vw - 48px) / 3);
+  --card-board-h:          72px;
+  --cell-w:                calc((100vw - 48px) / 3);
+  --cell-h:                76px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --anim-micro:   80ms;
+    --anim-card:    150ms;
+    --anim-screen:  150ms;
+    --anim-reveal:  200ms;
+    --anim-damage:  200ms;
+    --anim-death:   250ms;
+    --anim-banner:  150ms;
+    --anim-total:   1800ms;
+  }
+}
+
+/* ── Reset & Base ──────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Keyframe Animations ──────────────────────────────────────────────────── */
+
+@keyframes frontline-pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--color-frontline-glow); }
+  50%       { box-shadow: 0 0 20px var(--color-frontline-glow), 0 0 40px rgba(255,140,0,0.2); }
+}
+
+@keyframes card-place {
+  0%   { transform: scale(0.8) translateY(-10px); opacity: 0; }
+  60%  { transform: scale(1.05); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes damage-float {
+  0%   { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-32px); opacity: 0; }
+}
+
+@keyframes card-death {
+  0%   { transform: scale(1); opacity: 1; filter: brightness(1); }
+  30%  { transform: scale(1.1); filter: brightness(2) saturate(0); }
+  100% { transform: scale(0) rotate(15deg); opacity: 0; }
+}
+
+@keyframes shield-flash {
+  0%   { box-shadow: 0 0 0 2px var(--color-shield); }
+  50%  { box-shadow: 0 0 12px 4px var(--color-shield); }
+  100% { box-shadow: 0 0 0 2px transparent; }
+}
+
+@keyframes nexus-hit {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-4px); }
+  40%       { transform: translateX(4px); }
+  60%       { transform: translateX(-2px); }
+  80%       { transform: translateX(2px); }
+}
+
+@keyframes slide-in-down {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,8 @@
+.git
+node_modules
+packages/*/node_modules
+packages/server/dist
+packages/client/dist
+snap-grid/
+*.log
+.env
