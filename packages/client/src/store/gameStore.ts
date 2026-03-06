@@ -4,6 +4,7 @@ import type {
   GameState, CardInstance, PlanSubmission, PlanAction,
   ResolutionResult, GameOverResult,
 } from '@snap-grid/shared';
+import { STARTER_DECK } from '@snap-grid/shared';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STORE TYPES
@@ -188,12 +189,37 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectHandCard: (card) => set({ selectedHandCard: card }),
 
   placeCard: (x, y) => {
-    const { selectedHandCard, slot, localPlan } = get();
-    if (!selectedHandCard || slot === null) return;
+    const { selectedHandCard, slot, localPlan, gameState } = get();
+    if (!selectedHandCard || slot === null || !gameState) return;
 
     // Validate: own territory
     const validRows = slot === 0 ? [2, 3] : [0, 1];
     if (!validRows.includes(y)) return;
+
+    // Validate target is empty in base board
+    if (gameState.board.cells[x as 0 | 1 | 2][y as 0 | 1 | 2 | 3]) return;
+
+    // Validate target is empty in local plan
+    const isOccupiedByPlan = localPlan.some(
+      a => a.type === 'PLACE_CARD' && a.target.x === x && a.target.y === y
+    );
+    if (isOccupiedByPlan) return;
+
+    const def = STARTER_DECK.find(d => d.id === selectedHandCard.definitionId);
+    if (!def) return;
+
+    let spentEnergy = 0;
+    for (const act of localPlan) {
+      if (act.type === 'PLACE_CARD') {
+        const actionCard = gameState.players[slot].hand.find(c => c.instanceId === act.instanceId);
+        if (actionCard) {
+          const actionDef = STARTER_DECK.find(d => d.id === actionCard.definitionId);
+          if (actionDef) spentEnergy += actionDef.cost;
+        }
+      }
+    }
+
+    if (gameState.players[slot].energy - spentEnergy < def.cost) return;
 
     const action: PlanAction = {
       type: 'PLACE_CARD',

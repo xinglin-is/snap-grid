@@ -2,15 +2,48 @@ import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { GridBoard } from './GridBoard';
 import { HandArea } from './HandArea';
+import { STARTER_DECK, BoardState } from '@snap-grid/shared';
 
 export function GameScreen() {
-  const { gameState, slot, submitReady, forfeit, screen, opponentReady, error, clearError } = useGameStore();
+  const { gameState, slot, submitReady, forfeit, screen, opponentReady, error, clearError, localPlan } = useGameStore();
 
   if (!gameState || slot === null) return null;
 
   const player = gameState.players[slot];
   const opponent = gameState.players[slot === 0 ? 1 : 0];
   const isSubmitted = screen === 'WAITING_FOR_OPPONENT';
+
+  // --- Compute derived state ---
+  const derivedBoard: BoardState = {
+    nexus: [{ ...gameState.board.nexus[0] }, { ...gameState.board.nexus[1] }],
+    cells: [
+      [...gameState.board.cells[0]],
+      [...gameState.board.cells[1]],
+      [...gameState.board.cells[2]],
+    ],
+  };
+
+  const derivedHand = [...player.hand];
+  let derivedEnergy = player.energy;
+
+  for (const action of localPlan) {
+    if (action.type === 'PLACE_CARD') {
+      const cardIndex = derivedHand.findIndex((c) => c.instanceId === action.instanceId);
+      if (cardIndex !== -1) {
+        const card = derivedHand[cardIndex];
+        const def = STARTER_DECK.find((d) => d.id === card.definitionId);
+        if (def) {
+          derivedEnergy -= def.cost;
+        }
+        derivedHand.splice(cardIndex, 1);
+        derivedBoard.cells[action.target.x][action.target.y] = {
+          ...card,
+          position: { x: action.target.x, y: action.target.y },
+        };
+      }
+    }
+  }
+  // --- End derived state ---
 
   return (
     <div style={{
@@ -96,13 +129,13 @@ export function GameScreen() {
 
       {/* Grid board — scrollable middle */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
-        <GridBoard board={gameState.board} slot={slot} />
+        <GridBoard board={derivedBoard} slot={slot} />
       </div>
 
       {/* Hand area */}
       <HandArea
-        hand={player.hand}
-        energy={player.energy}
+        hand={derivedHand}
+        energy={derivedEnergy}
         maxEnergy={player.maxEnergy}
         submitted={isSubmitted}
       />
